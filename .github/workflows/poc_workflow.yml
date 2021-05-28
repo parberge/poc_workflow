@@ -17,9 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Poc action
         run: |
           echo "Foo: ${{ github.event.inputs.foo }}"
           echo "Bar: ${{ github.event.inputs.bar }}"
           echo "Baz: ${{ github.event.inputs.baz }}"
-          
