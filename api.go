@@ -25,20 +25,36 @@ func main() {
 		&oauth2.Token{AccessToken: token},
 	)
 	oathClient := oauth2.NewClient(ctx, tokenSource)
-
 	githubClient := github.NewClient(oathClient)
 
-	// Trigger workflow
-	// TODO: Find out why this gives 403 even though the provided token SHOULD have permissions
-	workflowResponse, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, githubOwner, githubRepo, githubWorkflowFileName, githubDispatchEvent)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	r := gin.Default()
-	r.GET("/trigger", func(c *gin.Context) {
+	r.GET("/workflows", func(c *gin.Context) {
+		workflows, _, err := githubClient.Actions.ListWorkflows(ctx, githubOwner, githubRepo, nil)
+		if err != nil {
+			c.JSON(200, err)
+		}
+		c.JSON(200, workflows)
+	})
+
+	// TODO: Find out why this gives 403 even though the provided token SHOULD have permissions
+
+	r.POST("/workflows/trigger", func(c *gin.Context) {
+		workflowResponse, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, githubOwner, githubRepo, githubWorkflowFileName, githubDispatchEvent)
+		if err != nil {
+			log.Fatal(err)
+		}
 		c.JSON(200, workflowResponse)
 	})
+
+	r.GET("/workflows/:name", func(c *gin.Context) {
+		fileName := c.Param("name")
+		workflowResponse, _, err := githubClient.Actions.GetWorkflowByFileName(ctx, githubOwner, githubRepo, fileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.JSON(200, workflowResponse)
+
+	})
+
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
