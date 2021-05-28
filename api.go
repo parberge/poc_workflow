@@ -17,6 +17,8 @@ func main() {
 	githubWorkflowFileName := "poc_workflow.yml"
 
 	githubDispatchEvent := github.CreateWorkflowDispatchEventRequest{"main", nil}
+	log.Print(githubDispatchEvent.Ref)
+	log.Print(githubDispatchEvent.Inputs)
 
 	ctx := context.Background()
 	tokenSource := oauth2.StaticTokenSource(
@@ -27,6 +29,7 @@ func main() {
 	githubClient := github.NewClient(oathClient)
 
 	// Trigger workflow
+	// TODO: Find out why this gives 403 even though the provided token SHOULD have permissions
 	workflowResponse, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, githubOwner, githubRepo, githubWorkflowFileName, githubDispatchEvent)
 
 	if err != nil {
