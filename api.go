@@ -12,24 +12,30 @@ import (
 
 func main() {
 	token := os.Getenv("GITHUB_TOKEN")
+	githubOwner := "parberge"
+	githubRepo := "poc_workflow"
+	githubWorkflowFileName := "poc_workflow.yml"
+
+	githubDispatchEvent := github.CreateWorkflowDispatchEventRequest{"main", nil}
 
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
+	tokenSource := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
-	tc := oauth2.NewClient(ctx, ts)
+	oathClient := oauth2.NewClient(ctx, tokenSource)
 
-	client := github.NewClient(tc)
+	githubClient := github.NewClient(oathClient)
 
-	// list all repositories for the authenticated user
-	repos, _, err := client.Repositories.List(ctx, "", nil)
+	// Trigger workflow
+	workflowResponse, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, githubOwner, githubRepo, githubWorkflowFileName, githubDispatchEvent)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	r := gin.Default()
-	r.GET("/repos", func(c *gin.Context) {
-		c.JSON(200, repos)
+	r.GET("/trigger", func(c *gin.Context) {
+		c.JSON(200, workflowResponse)
 	})
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
