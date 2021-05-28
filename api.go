@@ -35,19 +35,27 @@ func main() {
 		c.JSON(200, workflows)
 	})
 
-	r.POST("/:owner/:repo/workflows/:name", func(c *gin.Context) {
+	r.GET("/:owner/:repo/workflows/:name/trigger", func(c *gin.Context) {
 		owner := c.Param("owner")
 		repo := c.Param("repo")
 		fileName := c.Param("name")
 
-		githubDispatchEvent := github.CreateWorkflowDispatchEventRequest{"main", nil}
-		workflowResponse, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, owner, repo, fileName, githubDispatchEvent)
+		inputs := map[string]interface{}{
+			"foo": c.Query("foo"),
+			"bar": c.Query("bar"),
+			"baz": c.Query("baz"),
+		}
 
-		log.Print(err)
+		githubDispatchEvent := github.CreateWorkflowDispatchEventRequest{"main", inputs}
+		_, err := githubClient.Actions.CreateWorkflowDispatchEventByFileName(ctx, owner, repo, fileName, githubDispatchEvent)
+
 		if err != nil {
 			c.String(200, err.Error())
 		}
-		c.JSON(200, workflowResponse)
+		c.JSON(200, gin.H{
+			"message": "OK"},
+		)
+
 	})
 
 	r.GET("/:owner/:repo/workflows/:name", func(c *gin.Context) {
