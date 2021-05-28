@@ -1,0 +1,25 @@
+name: PoC workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      foo:
+        description: "Required variable foo"
+        required: true
+      bar:
+        description: "Required variable bar"
+        required: true
+      baz:
+        description: "Optional variable baz"
+
+jobs:
+  poc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+        run: |
+          echo "Foo: ${{ github.event.inputs.foo }}"
+          echo "Bar: ${{ github.event.inputs.bar }}"
+          echo "Baz: ${{ github.event.inputs.baz }}"
+          
